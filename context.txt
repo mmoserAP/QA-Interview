@@ -1,0 +1,43 @@
+QA INTERVIEW - PROJECT MANAGEMENT MODULE CONTEXT
+=====================================================
+
+FEATURE OVERVIEW
+-----------------
+You are reviewing a new feature for a Project Management module: My Projects. The feature includes:
+• A frontend UI (HTML mockup provided)
+• A backend with API endpoints
+• A SQL database to persist data
+
+As the QA in this project, your role is to analyze the feature, ask clarifying questions, design a testing strategy, identify risks, and propose both manual and automated test coverage.
+
+FRONTEND (PROVIDED HTML)
+------------------------
+The UI allows users to:
+• View a list of projects
+• Create a new project via a form with fields:
+  - Project Name (required, must be unique)
+  - Description (optional)
+  - Start Date (required)
+  - End Date (optional, must be after Start Date)
+  - Status (Draft / Active / Archived)
+  - Project Owner (auto-assigned from logged-in user)
+• Edit or delete existing projects
+
+BACKEND – API ENDPOINTS
+-----------------------
+GET /users/me
+POST /projects
+GET /projects
+PUT /projects/{id}
+DELETE /projects/{id}
+
+DATABASE SCHEMA (SIMPLIFIED)
+-----------------------------
+Table: projects
+• id (PK)
+• name (UNIQUE, NOT NULL)
+• description
+• start_date (NOT NULL)
+• end_date (NULL, must be > start_date if present)
+• status (Draft, Active, Archived)
+• owner (NOT NULL)
