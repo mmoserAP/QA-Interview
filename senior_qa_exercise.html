@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Projects - Senior QA Exercise</title>
+  <style>
+    body { 
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+      margin: 0; 
+      padding: 20px; 
+      background: #f8f9fa;
+      min-height: 100vh;
+    }
+    .container { 
+      max-width: 900px; 
+      margin: auto; 
+      background: #fff; 
+      padding: 32px; 
+      border-radius: 12px; 
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+    h1 { 
+      text-align: center; 
+      color: #2c3e50;
+      margin-bottom: 8px;
+      font-weight: 300;
+      font-size: 2.2em;
+    }
+    button { 
+      padding: 12px 24px; 
+      margin: 4px; 
+      border: none;
+      border-radius: 6px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 14px;
+    }
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    #btnNewProject {
+      background: linear-gradient(45deg, #4CAF50, #45a049);
+      color: white;
+    }
+    button[type="submit"] {
+      background: linear-gradient(45deg, #2196F3, #1976D2);
+      color: white;
+    }
+    button[type="button"] {
+      background: #f5f5f5;
+      color: #666;
+      border: 1px solid #ddd;
+    }
+    .project-list { margin-top: 32px; }
+    .project-item { 
+      background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+      margin-bottom: 16px; 
+      padding: 20px; 
+      border-radius: 8px;
+      border-left: 4px solid #2196F3;
+      transition: transform 0.2s ease;
+    }
+    .project-item:hover {
+      transform: translateX(5px);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    .hidden { display: none; }
+    .error { 
+      color: #e74c3c; 
+      font-size: 0.85em; 
+      margin-top: 4px;
+      font-weight: 500;
+    }
+    label { 
+      display: block; 
+      margin-top: 20px; 
+      font-weight: 600;
+      color: #34495e;
+      margin-bottom: 6px;
+    }
+    input, textarea, select { 
+      width: 100%; 
+      padding: 12px 16px; 
+      margin-top: 4px; 
+      border-radius: 6px; 
+      border: 2px solid #e1e8ed;
+      font-size: 14px;
+      transition: border-color 0.3s ease;
+      box-sizing: border-box;
+    }
+    input:focus, textarea:focus, select:focus {
+      outline: none;
+      border-color: #2196F3;
+      box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+    }
+    textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+    .form-actions { 
+      margin-top: 24px; 
+      display: flex;
+      gap: 12px;
+    }
+    .status-badge { 
+      display: inline-block; 
+      padding: 4px 12px; 
+      border-radius: 20px; 
+      font-size: 0.8em;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .status-draft { background: #fff3cd; color: #856404; }
+    .status-active { background: #d4edda; color: #155724; }
+    .status-archived { background: #e2e3e5; color: #383d41; }
+    .header-container { 
+      display: flex; 
+      justify-content: flex-end; 
+      margin-bottom: 16px; 
+    }
+    .welcome-user { 
+      font-size: 0.9em; 
+      text-align: right;
+      color: #666;
+    }
+    .welcome-user .username { 
+      font-weight: bold;
+      color: #2c3e50;
+    }
+    #projectForm {
+      background: #f8f9fa;
+      padding: 24px;
+      border-radius: 8px;
+      margin-top: 20px;
+      border: 1px solid #e9ecef;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header-container">
+      <div id="loadingUser" class="hidden">Loading user...</div>
+      <div id="userInfo" class="welcome-user hidden">
+        Welcome <span id="currentUserName" class="username"></span>
+      </div>
+    </div>
+    <h1>My Projects</h1>
+    <button id="btnNewProject">Create New Project</button>
+    <form id="projectForm" class="hidden">
+      <label>Project Name*<input type="text" id="projectName"></label>
+      <div class="error" id="errorName"></div>
+      <label>Description<textarea id="projectDesc"></textarea></label>
+      <label>Start Date*<input type="date" id="projectStart"></label>
+      <div class="error" id="errorStart"></div>
+      <label>End Date<input type="date" id="projectEnd"></label>
+      <label>Status*
+        <select id="projectStatus">
+          <option value="Draft">Draft</option>
+          <option value="Active">Active</option>
+          <option value="Archived">Archived</option>
+        </select>
+      </label>
+      <label>Project Owner
+        <input type="text" id="projectOwner" disabled>
+      </label>
+      <div class="form-actions">
+        <button type="submit">Save</button>
+        <button type="button" id="btnCancel">Cancel</button>
+      </div>
+      <div class="error" id="errorForm"></div>
+    </form>
+
+    <div class="project-list" id="projectList"></div>
+  </div>
+
+  <script>
+    // User request simulation that takes 1 second
+    async function fetchCurrentUser() {
+      return new Promise(resolve => {
+        setTimeout(() => {
+          resolve({ name: "John Doe", canCreate: true });
+        }, 1000);
+      });
+    }
+
+    // Current user variable
+    let currentUser = null;
+
+    // Array of responsible persons
+    const responsiblePersons = [
+      "John Doe",
+    ];
+
+    // In-memory state
+    let projects = [];
+
+    // DOM elements
+    const btnNewProject = document.getElementById('btnNewProject');
+    const projectForm = document.getElementById('projectForm');
+    const btnCancel = document.getElementById('btnCancel');
+    const projectList = document.getElementById('projectList');
+    const projectOwner = document.getElementById('projectOwner');
+    const loadingUser = document.getElementById('loadingUser');
+    const userInfo = document.getElementById('userInfo');
+    const currentUserName = document.getElementById('currentUserName');
+
+    // Error elements
+    const errorName = document.getElementById('errorName');
+    const errorStart = document.getElementById('errorStart');
+    const errorForm = document.getElementById('errorForm');
+
+    // Initialization
+    async function init() {
+      // Show loading
+      loadingUser.classList.remove('hidden');
+      btnNewProject.style.display = 'none';
+      
+      console.log('Fetching user data...');
+      currentUser = await fetchCurrentUser();
+      console.log('User fetched:', currentUser);
+      
+      // Hide loading and show user info
+      loadingUser.classList.add('hidden');
+      userInfo.classList.remove('hidden');
+      currentUserName.textContent = currentUser.name;
+      btnNewProject.style.display = 'inline-block';
+      
+      if (!currentUser.canCreate) {
+        btnNewProject.classList.add('hidden');
+      }
+      projectOwner.value = '';
+      renderProjects();
+    }
+
+    btnNewProject.addEventListener('click', () => {
+      projectForm.reset();
+      errorName.textContent = '';
+      errorStart.textContent = '';
+      errorForm.textContent = '';
+      const randomIndex = Math.floor(Math.random() * responsiblePersons.length);
+      projectOwner.value = responsiblePersons[randomIndex];
+      projectForm.classList.remove('hidden');
+      btnNewProject.classList.add('hidden');
+    });
+
+    btnCancel.addEventListener('click', () => {
+      projectForm.classList.add('hidden');
+      btnNewProject.classList.remove('hidden');
+    });
+
+    projectForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      errorName.textContent = '';
+      errorStart.textContent = '';
+      errorForm.textContent = '';
+
+      const name = document.getElementById('projectName').value.trim();
+      const desc = document.getElementById('projectDesc').value.trim();
+      const start = document.getElementById('projectStart').value;
+      const end = document.getElementById('projectEnd').value;
+      const status = document.getElementById('projectStatus').value;
+      const owner = projectOwner.value;
+
+      let valid = true;
+      if (!name) {
+        errorName.textContent = 'Project name is required.';
+        valid = false;
+      }
+      if (!start) {
+        errorStart.textContent = 'Start date is required.';
+        valid = false;
+      }
+      if (start && end && end < start) {
+        errorForm.textContent = 'End date cannot be before start date.';
+        valid = false;
+      }
+
+      if (!valid) return;
+
+      projects.push({
+        name,
+        desc,
+        start,
+        end,
+        status,
+        owner
+      });
+
+      projectForm.classList.add('hidden');
+      btnNewProject.classList.remove('hidden');
+      renderProjects();
+    });
+
+    function renderProjects() {
+      if (projects.length === 0) {
+        projectList.innerHTML = '<em>You have no projects yet.</em>';
+        return;
+      }
+      projectList.innerHTML = projects.map((p, index) => `
+        <div class="project-item">
+          <strong>${p.name}</strong>
+          <span class="status-badge status-${p.status.toLowerCase()}">${p.status}</span><br>
+          <small>Owner: ${p.owner}</small><br>
+          <span>Start: ${p.start}${p.end ? ' | End: ' + p.end : ''}</span><br>
+          ${p.desc ? `<div>${p.desc}</div>` : ''}
+          <div class="form-actions">
+            <button onclick="editProject(${index})">Edit</button>
+            <button onclick="deleteProject(${index})">Delete</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function editProject(index) {
+      const project = projects[index];
+      document.getElementById('projectName').value = project.name;
+      document.getElementById('projectDesc').value = project.desc;
+      document.getElementById('projectStart').value = project.start;
+      document.getElementById('projectEnd').value = project.end;
+      document.getElementById('projectStatus').value = project.status;
+      projectOwner.value = project.owner;
+      projectForm.classList.remove('hidden');
+      btnNewProject.classList.add('hidden');
+      // Note: this demo doesn't save changes, could be extended.
+    }
+
+    function deleteProject(index) {
+      projects.splice(index, 1);
+      renderProjects();
+    }
+
+    window.onload = init;
+  </script>
+</body>
+</html>
