@@ -181,7 +181,6 @@
   </div>
 
   <script>
-    // User request simulation that takes 1 second
     async function fetchCurrentUser() {
       return new Promise(resolve => {
         setTimeout(() => {
@@ -190,18 +189,13 @@
       });
     }
 
-    // Current user variable
     let currentUser = null;
-
-    // Array of responsible persons
     const responsiblePersons = [
       "John Doe",
     ];
 
-    // In-memory state
     let projects = [];
 
-    // DOM elements
     const btnNewProject = document.getElementById('btnNewProject');
     const projectForm = document.getElementById('projectForm');
     const btnCancel = document.getElementById('btnCancel');
@@ -211,14 +205,11 @@
     const userInfo = document.getElementById('userInfo');
     const currentUserName = document.getElementById('currentUserName');
 
-    // Error elements
     const errorName = document.getElementById('errorName');
     const errorStart = document.getElementById('errorStart');
     const errorForm = document.getElementById('errorForm');
 
-    // Initialization
     async function init() {
-      // Show loading
       loadingUser.classList.remove('hidden');
       btnNewProject.style.display = 'none';
       
@@ -226,7 +217,6 @@
       currentUser = await fetchCurrentUser();
       console.log('User fetched:', currentUser);
       
-      // Hide loading and show user info
       loadingUser.classList.add('hidden');
       userInfo.classList.remove('hidden');
       currentUserName.textContent = currentUser.name;
@@ -332,7 +322,6 @@
       projectForm.classList.remove('hidden');
       btnNewProject.classList.add('hidden');
       projectList.classList.add('hidden');
-      // Note: this demo doesn't save changes, could be extended.
     }
 
     function deleteProject(index) {
